@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 '''
-program: sort_bibtex.py
-created: 2016-05-25 -- 19 CEST
+program: sortbibtex.py
+created: Wed Feb  1 12:03:40 CET 2017
 author: tc
 '''
 

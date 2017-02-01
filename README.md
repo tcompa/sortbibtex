@@ -4,7 +4,7 @@ When used with option '--subset' (see [Usage](#usage) and [Example_subset](Examp
 
 ### Usage
 
-    usage: sort_bibtex.py [-h] [--subset SUBSET] [-d] refs_file
+    usage: sortbibtex.py [-h] [--subset SUBSET] [-d] refs_file
 
     Sort a bibtex file in-place.
 
