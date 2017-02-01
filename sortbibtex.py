@@ -140,15 +140,15 @@ def store_bibtex(_db, _file_output, _backup, list_of_keys=False):
 
 
 # Parse arguments
-parser = argparse.ArgumentParser(description='Sort a bibtex file in-place.')
-parser.add_argument('refs_file', type=str, help='file to be sorted')
+parser = argparse.ArgumentParser(description='Clean and sort a bibtex file.')
+parser.add_argument('refs', type=str, help='bibtex file to be cleaned/sorted')
 parser.add_argument('--subset', dest='subset', type=str,
                     help='only use items listed in the file SUBSET' +
                          ' (default: use all)')
 parser.add_argument('-d', dest='dry_run', action='store_true',
                     help='dry run (only parse, do not write any file')
 args = parser.parse_args()
-file_input = args.refs_file
+file_input = args.refs
 file_subset = args.subset
 dry_run = args.dry_run
 

@@ -1,15 +1,15 @@
 # sortbibtex
-Python2 script that loads a bibtex file, validates its content (see [Bibtex style](#bibtex-style)), and saves a clean version of it.  
+Python2 script that loads a bibtex file, validates its content (see [Bibtex style](#bibtex-style)), and saves it in a clean (and sorted) version.  
 When used with option '--subset' (see [Usage](#usage) and [Example_subset](Example_subset)), it creates a new bibtex file only including a subset of the original items (this may be useful to create a project-specific file out of a master bibtex file).
 
 ### Usage
 
-    usage: sortbibtex.py [-h] [--subset SUBSET] [-d] refs_file
+    usage: sortbibtex.py [-h] [--subset SUBSET] [-d] refs
 
-    Sort a bibtex file in-place.
+    Clean and sort a bibtex file.
 
     positional arguments:
-      refs_file        file to be sorted
+      refs             bibtex file to be cleaned/sorted
 
     optional arguments:
       -h, --help       show this help message and exit
