@@ -1,5 +1,5 @@
 # sortbibtex
-Python2 script that loads a bibtex file, validates its content (see [Bibtex style](#bibtex-style)), and saves it in a clean (and sorted) version.  
+Python2 script that loads a bibtex file, validates its content (see [Bibtex style](#bibtex-style)), and saves it in a clean version.  
 When used with option '--subset' (see [Usage](#usage) and [Example_subset](Example_subset)), it creates a new bibtex file only including a subset of the original items (this may be useful to create a project-specific file out of a master bibtex file).
 
 ### Usage
