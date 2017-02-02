@@ -14,7 +14,7 @@ When used with option '--subset' (see [Usage](#usage) and [Example_subset](Examp
     optional arguments:
       -h, --help       show this help message and exit
       --subset SUBSET  only use items listed in the file SUBSET (default: use all)
-      -d               dry run (only parse, do not write any file
+      -d               dry run (only parse, do not write any file)
 
 ### Bibtex style
 The script requires enforcement of a set of style properties in the bibtex file:
