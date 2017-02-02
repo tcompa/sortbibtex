@@ -147,7 +147,7 @@ parser.add_argument('--subset', dest='subset', type=str,
                     help='only use items listed in the file SUBSET' +
                          ' (default: use all)')
 parser.add_argument('-d', dest='dry_run', action='store_true',
-                    help='dry run (only parse, do not write any file')
+                    help='dry run (only parse, do not write any file)')
 args = parser.parse_args()
 file_input = args.refs
 file_subset = args.subset
