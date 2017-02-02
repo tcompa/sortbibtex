@@ -14,39 +14,35 @@ import time
 import subprocess
 
 
-def ask_confirmation(prompt=None, default_response=False):
+def ask_confirmation(prompt='Confirm', default_response=False):
     '''
-    Taken from:
-    http://code.activestate.com/recipes/541096-prompt-the-user-for-confirmation
-
     Prompts for yes/no response from the user, and returns True/False.
-
+    Based on:
+    http://code.activestate.com/recipes/541096-prompt-the-user-for-confirmation
     Input:
-      + prompt         : the message to show (string)
-      + default_resp   : default answer, if user only types 'enter' (boolean)
+      + prompt        : the message to show (string)
+      + default_resp  : default answer, if user types 'enter' (boolean)
     '''
 
-    if prompt is None:
-        prompt = 'Confirm'
-    if default_response:
-        prompt = '%s [%s]|%s:\n' % (prompt, 'y', 'n')
-    else:
-        prompt = '%s [%s]|%s:\n' % (prompt, 'n', 'y')
+    default_yesno = 'yes' if default_response else 'no'
+    prompt = '%s yes/no (default: %s): ' % (prompt, default_yesno)
     while True:
         ans = raw_input(prompt)
         if not ans:
             return default_response
-        if ans not in ['y', 'Y', 'n', 'N']:
-            print 'please enter y or n.'
-            continue
-        if ans == 'y' or ans == 'Y':
+        if ans in ['y', 'Y', 'yes', 'Yes']:
             return True
-        if ans == 'n' or ans == 'N':
+        elif ans in['n', 'N', 'no', 'No']:
             return False
+        else:
+            print 'Not a valid answer, please enter y or n.'
+            continue
 
 
 def temporary_backup(filename):
-    assert filename.endswith('.bib'), 'ERROR: %s is not a bib file.' % filename
+    '''
+    Stores a time-stamped copy of filename in a temporary folder.
+    '''
     tmpdir = '/tmp/tmp_backups_bibtex/'
     try:
         assert os.path.isdir(tmpdir)
@@ -59,6 +55,7 @@ def temporary_backup(filename):
 
 
 def recognize_line(_line, _iline):
+    ''' Classifies a line as start/mid/end line of a bibtex item. '''
     condition_start_1 = _line[0] == '@' and _line[-1] == ','
     condition_start_2 = '{' in _line and '}' not in _line
     if condition_start_1 and condition_start_2:
@@ -77,26 +74,25 @@ def recognize_line(_line, _iline):
 
 def call_bash_command(cmdlist, Verbose=False):
     '''
-    Call a bash command and catch its returncode, stdout, and stderr.
+    Calls a bash command, catching its returncode, stdout, and stderr.
     '''
     p = subprocess.Popen(cmdlist, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     if Verbose:
-        print '*' * 80
-        print '[call_bash_command] start'
-        print 'returncode:'
-        print p.returncode
-        print 'stdout:'
-        print stdout
-        print 'stderr:'
-        print stderr
-        print '[call_bash_command] end'
-        print '*' * 80
+        print '_' * 80 + '\n[call_bash_command] start'
+        print 'returncode:\n', p.returncode
+        print 'stdout:\n', stdout
+        print 'stderr:\n', stderr
+        print '[call_bash_command] end\n' + '*' * 80
     return p.returncode, stdout, stderr
 
 
 def write_git_revision_hash(output):
+    '''
+    Looks for the current git hash, and writes it (if found) in a
+    comment on output.
+    '''
     commands = ['git', 'rev-parse', 'HEAD']
     returncode, stdout, stderr = call_bash_command(commands, Verbose=False)
     if returncode == 0:
@@ -107,6 +103,11 @@ def write_git_revision_hash(output):
 
 
 def store_bibtex(_db, _file_output, _backup, list_of_keys=False):
+    '''
+    Saves the bibtex entries of _db (+ some general info) on _file_output.
+    Optional (if list_of_keys=True): It stores a list of the item
+    keys, on a different file.
+    '''
     out = open(_file_output, 'w')
     if list_of_keys:
         out_keys = open('list_of_keys.tex', 'w')
@@ -117,17 +118,17 @@ def store_bibtex(_db, _file_output, _backup, list_of_keys=False):
     write_git_revision_hash(out)
     out.write('# Temporary backup of the original file: %s.\n' % _backup)
     out.write('# Number of items:\n')
-    for item_type in sorted(db.keys()):
-        out.write('#   %i %s\n' % (len(db[item_type]), item_type))
+    for itemtype in sorted(db.keys()):
+        out.write('#   %i %s\n' % (len(db[itemtype]), itemtype))
     out.write('\n')
-    for item_type in sorted(_db.keys()):
+    for itemtype in sorted(_db.keys()):
         out.write('#' * 80 + '\n')
-        out.write('# %s section:\n\n' % item_type)
-        sorted_IDs = sorted(_db[item_type].keys())
+        out.write('# %s section:\n\n' % itemtype)
+        sorted_IDs = sorted(_db[itemtype].keys())
         for ID in sorted_IDs:
-            out.write('@%s{%s,\n' % (item_type, ID))
-            assert ID in _db[item_type].keys()
-            for line in _db[item_type][ID]:
+            out.write('@%s{%s,\n' % (itemtype, ID))
+            assert ID in _db[itemtype].keys()
+            for line in _db[itemtype][ID]:
                 out.write(line + '\n')
             out.write('}\n')
             out.write('\n')
@@ -152,18 +153,16 @@ file_input = args.refs
 file_subset = args.subset
 dry_run = args.dry_run
 
-# Input file
+# Check input file, and create backup
 assert os.path.isfile(file_input)
 assert file_input.endswith('.bib')
-
-# Temporary backup
 backup_file = temporary_backup(file_input)
 
 # Read file
 with open(file_input) as f:
     lines = f.read().splitlines()
 
-# key subset
+# Load key subset
 if file_subset is not None:
     assert os.path.isfile(file_subset)
     keys_subset = []
@@ -173,52 +172,53 @@ if file_subset is not None:
     print 'Loaded a subset of %i keys from %s' % (len(keys_subset),
                                                   file_subset)
 
-# output file
+# Set output file
 if file_subset is None:
     file_output = file_input
 else:
     file_output = file_subset.replace('.', '_') + '.bib'
 
-# initialization
+# Initialize db
 db = {}
 allowed_items = {'article', 'book', 'phdthesis', 'incollection', 'unpublished',
                  'misc', 'inproceedings', 'inbook'}
 comment_lines = []
 
-# main loop
-InsideItem = False
+# Parse the input file
+InsideItemLock = False
 print 'Parsing %s - start' % file_input
 for iline, line in enumerate(lines):
 
+    # Preliminary checks (filter empty lines, enforce no-tabs rule)
     if len(line.replace(' ', '').replace('\t', '')) == 0:
         continue
-
     if '\t' in line:
         sys.exit('ERROR: tab in line %i, please fix it.' % iline)
 
     line_type = recognize_line(line, iline)
+    # Treat starting line of a bibtex item
     if line_type == 'start_line':
         # Set InsideItem lock
-        if InsideItem:
+        if InsideItemLock:
             sys.exit('ERROR (line %i): start_line in previous item.' %
                      line_type)
-        InsideItem = True
-        # Get item_type and ID
+        InsideItemLock = True
+        # Get itemtype and ID
         type_and_ID = line.replace(' ', '').replace('@', '').replace(',', '')
-        item_type, ID = type_and_ID.split('{')
-        if item_type != item_type.lower():
+        itemtype, ID = type_and_ID.split('{')
+        if itemtype != itemtype.lower():
             sys.exit('FIXME: non lower-case itemtype, line %i.' % (iline + 1))
-        if item_type not in allowed_items:
-            sys.exit('ERROR (%i): itemtype %s not known.' % (iline + 1,
-                                                             item_type))
-
+        if itemtype not in allowed_items:
+            sys.exit('ERROR (%i): unknown itemtype %s.' % (iline + 1,
+                     itemtype))
         # Update database
-        if item_type not in db.keys():
-            db[item_type] = {}
-        if ID in db[item_type]:
+        if itemtype not in db.keys():
+            db[itemtype] = {}
+        if ID in db[itemtype].keys():
             sys.exit('FIXME: duplicate item at line %i.' % (iline + 1))
-        db[item_type][ID] = []
+        db[itemtype][ID] = []
 
+    # Treat middle line of a bibtex item
     elif line_type == 'mid_line':
         # Check for number of { and }
         if line.count('{') != line.count('}'):
@@ -232,41 +232,40 @@ for iline, line in enumerate(lines):
         # Check that doi.dx is not used
         if line.replace(' ', '').startswith('doi') and 'dx.doi' in line:
             sys.exit('ERROR: dx in line %i:\n>> %s' % (iline + 1, line))
-        # Check month
+        # Check that month field is not used (mmonth is OK)
         if 'month' in line and 'mmonth' not in line:
             sys.exit('ERROR: month in line %i:\n>> %s.' % (iline + 1, line) +
                      'Please remove it.')
-        # Add commas
+        # Add commas at the end of the line
         if not line.replace(' ', '').endswith(','):
             line += ','
-        # Update database
-        db[item_type][ID].append(line)
         # Check arxiv style
         linelow = line.replace(' ', '').lower()
         if linelow.startswith('journal') and 'arxiv' in linelow:
             sys.exit('ERROR: arxiv ID should be in note, not journal,' +
                      'at line %i:\n>> %s' % (iline + 1, line))
-
+        # Update database
+        db[itemtype][ID].append(line)
+    # Treat last line of a bibtex item
     elif line_type == 'end_line':
         # Release InsideItem lock
-        InsideItem = False
-
+        InsideItemLock = False
+    # Treat comment line
     elif line_type == 'comment':
         comment_lines.append(line)
-
+    # Treat unrecognized line
     else:
         sys.exit('ERROR: something wrong with line %i.' % iline)
-
 num_items = sum(len(sub_db.keys()) for sub_db in db.values())
 print 'Parsing %s - end (total number of keys: %i)' % (file_input, num_items)
 
 if file_subset is not None:
     # Select keys from keys_subset
     keys_included = []
-    for item_type in db.keys():
-        for k in db[item_type].keys():
+    for itemtype in db.keys():
+        for k in db[itemtype].keys():
             if k not in keys_subset:
-                del db[item_type][k]
+                del db[itemtype][k]
             else:
                 keys_included.append(k)
     # Check that all keys from keys_subset are included
@@ -276,16 +275,17 @@ if file_subset is not None:
             err += ' Item \'%s\' is requested in %s' % (k, file_subset)
             err += ' but missing in %s. Exit.' % file_input
             sys.exit(err)
-    print 'All %i keys from %s have been found.' % (len(keys_subset), file_subset)
+    print 'All %i keys from %s have been found.' % (len(keys_subset),
+                                                    file_subset)
 print 'Output file: %s' % file_output
 print 'Proposed changes affect the number of items as follows:'
-for item_type in sorted(db.keys()):
-    print '  %s' % item_type
-    cmd = 'var=`grep -i "%s{" %s ' % (item_type, file_input)
-    cmd += ' | grep -v in%s | wc -l`;' % item_type
+for itemtype in sorted(db.keys()):
+    print '  %s' % itemtype
+    cmd = 'var=`grep -i "%s{" %s ' % (itemtype, file_input)
+    cmd += ' | grep -v in%s | wc -l`;' % itemtype
     cmd += 'echo "    "%s: $var' % file_input
     os.system(cmd)
-    print '    %s: %i' % (file_output, len(db[item_type]))
+    print '    %s: %i' % (file_output, len(db[itemtype]))
 
 if dry_run:
     sys.exit('This is a dry run. Exit')
@@ -295,7 +295,6 @@ if not os.path.isfile(file_output):
 else:
     message = '\nWARNING: %s exists, shall I overwrite it?' % file_output
     writefile = ask_confirmation(message, default_response=False)
-print
 if writefile:
     print 'Writing on %s (temporary backup: %s).' % (file_output, backup_file)
     store_bibtex(db, file_output, backup_file)
