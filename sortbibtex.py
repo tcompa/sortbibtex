@@ -114,7 +114,7 @@ def store_bibtex(_db, _file_output, _backup, list_of_keys=False):
         out_keys.write('\\cite{')
     out.write('# Automatically generated (%s)' %
               time.strftime("%Y-%m-%d - %H:%M:%S"))
-    out.write(' using sort_bibtex.py.\n')
+    out.write(' using sortbibtex.py.\n')
     write_git_revision_hash(out)
     out.write('# Temporary backup of the original file: %s.\n' % _backup)
     out.write('# Number of items:\n')
