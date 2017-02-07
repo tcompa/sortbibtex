@@ -23,7 +23,6 @@ The script requires enforcement of a set of style properties in the bibtex file:
  - Do not break long lines (e.g. a long authors list).
  - Comments should start with '#'.
  - 'month' field should not be included ('mmonth', which is not recognized by bibtex, is accepted).
- - Do not use URL's from doi.dx (this often requires changes from the bibtex information provided by journals).
  - Tabs should be replaced by spaces.
  - arXiv ID should be in the 'note' field.
 

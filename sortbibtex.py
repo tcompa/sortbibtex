@@ -229,9 +229,6 @@ for iline, line in enumerate(lines):
         if titleline and not ('{{' in line or '\"{' in line):
             sys.exit('ERROR: No {{ or "{' +
                      ' in title line %i:\n>> %s' % (iline + 1, line))
-        # Check that doi.dx is not used
-        if line.replace(' ', '').startswith('doi') and 'dx.doi' in line:
-            sys.exit('ERROR: dx in line %i:\n>> %s' % (iline + 1, line))
         # Check that month field is not used (mmonth is OK)
         if 'month' in line and 'mmonth' not in line:
             sys.exit('ERROR: month in line %i:\n>> %s.' % (iline + 1, line) +
