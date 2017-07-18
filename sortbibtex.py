@@ -181,7 +181,7 @@ else:
 # Initialize db
 db = {}
 allowed_items = {'article', 'book', 'phdthesis', 'incollection', 'unpublished',
-                 'misc', 'inproceedings', 'inbook'}
+                 'misc', 'inproceedings', 'inbook', 'mastersthesis'}
 comment_lines = []
 
 # Parse the input file
